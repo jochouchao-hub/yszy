@@ -3,133 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>资源分享页</title>
+    <title>影视聚合 JSON 资源</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{
+            font-family: "Microsoft Yahei",monospace;
+            background:#111;
+            color:#eee;
+            padding:20px;
         }
-        body {
-            font-family: Arial, sans-serif;
-            background: #121212;
-            color: #e0e0e0;
-            padding: 20px;
+        .container{
+            max-width:1000px;
+            margin:0 auto;
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+        h1{
+            text-align:center;
+            margin-bottom:20px;
+            color:#409eff;
         }
-        h1 {
-            text-align: center;
-            margin-bottom: 25px;
-            color: #fff;
+        .tip{
+            text-align:center;
+            color:#aaa;
+            margin-bottom:15px;
         }
-        .tab-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
+        .btn-copy{
+            width:100%;
+            padding:12px;
+            background:#409eff;
+            border:none;
+            color:#fff;
+            font-size:16px;
+            border-radius:6px;
+            cursor:pointer;
+            margin-bottom:15px;
         }
-        .tab {
-            padding: 10px 18px;
-            background: #1e1e1e;
-            border: 1px solid #444;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: 0.2s;
-            color: #fff;
-        }
-        .tab.active {
-            background: #007bff;
-            border-color: #007bff;
-        }
-        .content-box {
-            background: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 20px;
-            height: 500px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 12px;
-            margin: 15px 0;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .tip {
-            text-align: center;
-            margin: 10px 0;
-            color: #aaa;
+        .json-box{
+            background:#1e1e1e;
+            border:1px solid #333;
+            padding:20px;
+            border-radius:8px;
+            height:600px;
+            overflow-y:auto;
+            white-space:pre;
+            font-family:Consolas,"Courier New",monospace;
+            font-size:14px;
+            line-height:1.6;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>优质资源页</h1>
-        <div class="tab-group">
-            <div class="tab active" data-file="itv.txt">ITV 直播源</div>
-            <div class="tab" data-file="jd.txt">JD 直播源</div>
-            <div class="tab" data-file="jiekou.txt">接口</div>
-            <div class="tab" data-file="节点.txt">节点</div>
-            <div class="tab" data-file="index.txt">自定义</div>
-        </div>
-
-        <div class="tip">加载中，请稍候...</div>
-        <button class="btn" id="copyBtn">复制全部内容</button>
-        <div class="content-box" id="content">加载中...</div>
+        <h1>影视聚合资源 JSON</h1>
+        <div class="tip">加载中...</div>
+        <button class="btn-copy" id="copyBtn">复制全部JSON内容</button>
+        <div class="json-box" id="jsonContent"></div>
     </div>
 
 <script>
-const contentEl = document.getElementById("content");
-const copyBtn = document.getElementById("copyBtn");
+const jsonFile = "影视聚合资源.json";
+const contentEl = document.getElementById("jsonContent");
 const tipEl = document.querySelector(".tip");
+const copyBtn = document.getElementById("copyBtn");
 
-document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        tab.classList.add("active");
-        loadFile(tab.dataset.file);
-    });
-});
-
-function loadFile(file) {
-    contentEl.innerText = "正在加载：" + file;
-    tipEl.innerText = "当前加载：" + file;
-
-    fetch(file)
-    .then(res => {
-        if (!res.ok) throw "文件不存在";
-        return res.text();
-    })
-    .then(text => {
-        contentEl.innerText = text;
-    })
-    .catch(err => {
+// 加载并格式化JSON
+async function loadJson(){
+    tipEl.innerText = "正在加载：" + jsonFile;
+    contentEl.innerText = "加载中...";
+    try{
+        let res = await fetch(jsonFile);
+        if(!res.ok) throw "文件不存在或路径错误";
+        let raw = await res.text();
+        // 格式化缩进
+        let formatJson = JSON.stringify(JSON.parse(raw), null, 2);
+        contentEl.innerText = formatJson;
+        tipEl.innerText = "加载成功：" + jsonFile;
+    }catch(err){
         contentEl.innerText = "❌ 加载失败：" + err;
-    });
+        tipEl.innerText = "加载异常";
+    }
 }
 
-copyBtn.addEventListener("click", () => {
-    navigator.clipboard.writeText(contentEl.innerText).then(() => {
-        copyBtn.innerText = "✅ 复制成功！";
-        setTimeout(() => copyBtn.innerText = "复制全部内容", 1500);
-    });
-});
+// 复制功能
+copyBtn.onclick = async ()=>{
+    try{
+        await navigator.clipboard.writeText(contentEl.innerText);
+        copyBtn.innerText = "✅ 已复制";
+        setTimeout(()=>copyBtn.innerText="复制全部JSON内容",1500);
+    }catch(e){
+        alert("复制失败，请手动全选复制");
+    }
+};
 
-loadFile("itv.txt");
+// 页面初始化加载
+loadJson();
 </script>
 </body>
 </html>
