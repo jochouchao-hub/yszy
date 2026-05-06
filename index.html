@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>资源分享页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #121212;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #fff;
+        }
+        .tab-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .tab {
+            padding: 10px 18px;
+            background: #1e1e1e;
+            border: 1px solid #444;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #fff;
+        }
+        .tab.active {
+            background: #007bff;
+            border-color: #007bff;
+        }
+        .content-box {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .tip {
+            text-align: center;
+            margin: 10px 0;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>优质资源页</h1>
+        <div class="tab-group">
+            <div class="tab active" data-file="itv.txt">ITV 直播源</div>
+            <div class="tab" data-file="jd.txt">JD 直播源</div>
+            <div class="tab" data-file="jiekou.txt">接口</div>
+            <div class="tab" data-file="节点.txt">节点</div>
+            <div class="tab" data-file="index.txt">自定义</div>
+        </div>
+
+        <div class="tip">加载中，请稍候...</div>
+        <button class="btn" id="copyBtn">复制全部内容</button>
+        <div class="content-box" id="content">加载中...</div>
+    </div>
+
+<script>
+const contentEl = document.getElementById("content");
+const copyBtn = document.getElementById("copyBtn");
+const tipEl = document.querySelector(".tip");
+
+document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        loadFile(tab.dataset.file);
+    });
+});
+
+function loadFile(file) {
+    contentEl.innerText = "正在加载：" + file;
+    tipEl.innerText = "当前加载：" + file;
+
+    fetch(file)
+    .then(res => {
+        if (!res.ok) throw "文件不存在";
+        return res.text();
+    })
+    .then(text => {
+        contentEl.innerText = text;
+    })
+    .catch(err => {
+        contentEl.innerText = "❌ 加载失败：" + err;
+    });
+}
+
+copyBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(contentEl.innerText).then(() => {
+        copyBtn.innerText = "✅ 复制成功！";
+        setTimeout(() => copyBtn.innerText = "复制全部内容", 1500);
+    });
+});
+
+loadFile("itv.txt");
+</script>
+</body>
+</html>
